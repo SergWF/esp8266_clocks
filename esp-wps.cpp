@@ -1,36 +1,55 @@
 #include <Arduino.h>
 #include "config.h"
+#include "server.h"
+#include "wps.h"
+#include "activity.h"
 
-void showFiles(){
-	String str = "";
-	Dir dir = SPIFFS.openDir("/");
-	while (dir.next()) {
-		Serial.printf("file %s %d\r\n", dir.fileName().c_str(), dir.fileSize());
-	    ;
-	}
-}
+#define MODE_UNKNOWN 0
+#define MODE_SERVER_AP 1
+#define MODE_WPS 2
+#define MODE_ACTIVE 10
 
+int mode = 0;
 
 void setup() {
-  Serial.begin(115200);
-  Serial.println("START");
-  SPIFFS.begin();
+	Serial.begin(115200);
+	Serial.println("START");
+	SPIFFS.begin();
 
-  delay(3000);
-  Serial.println("=====before======");
-  showFiles();
-  Serial.println("=====end======");
+	delay(3000);
 
-  delay(1000);
-  if(!loadConfig()){
-	  Serial.println("Config not loaded");
-  } else {
-	  Serial.println("Config was loaded properly");
-  }
-
+	if (!loadConfig()) {
+		Serial.println("Config not loaded");
+		mode = MODE_SERVER_AP;
+	} else {
+		Serial.println("Config was loaded properly");
+		mode = MODE_ACTIVE;
+	}
+	switch (mode) {
+	case MODE_SERVER_AP:
+		startServer();
+		break;
+	case MODE_WPS:
+		connectWPS();
+		break;
+	case MODE_ACTIVE:
+		init();
+		break;
+	default:
+		break;
+	}
 }
 
 void loop() {
 	delay(1000);
-	Serial.printf("loop: ssid=%s, password=%s\r\n", config.ssid, config.password);
+	switch (mode) {
+		case MODE_SERVER_AP:
+			processServer();
+			break;
+		case MODE_ACTIVE:
+			processMainActivity();
+			break;
+		default:
+			break;
+		}
 }
