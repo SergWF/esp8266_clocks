@@ -11,7 +11,7 @@
 
 Requirements:
 
-ESP8266 libraries: http://arduino.esp8266.com/stable/package_esp8266com_index.json
+Boards manager link: http://arduino.esp8266.com/stable/package_esp8266com_index.json
 	ESP8266Wifi
 	ESP8266WebServer
 
